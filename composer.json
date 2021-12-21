@@ -1,0 +1,22 @@
+{
+	"name": "merophp/php-template-view",
+	"description": "PHP template view plugin for merophp/view-engine",
+	"license": "MIT",
+	"authors": [
+        {
+            "name": "Robert Becker",
+            "role": "Lead"
+        }
+	],
+    "autoload": {
+        "psr-4": {"Merophp\\PhpTemplateViewPlugin\\": "src/"}
+    },
+    "require": {
+		"php": ">=7.4",
+        "merophp/view-engine": "0.1.*",
+        "psr/link": "^1.1"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.5"
+    }
+}
