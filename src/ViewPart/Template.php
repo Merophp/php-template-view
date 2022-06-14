@@ -3,16 +3,18 @@ declare(strict_types=1);
 
 namespace Merophp\PhpTemplateViewPlugin\ViewPart;
 
+use Merophp\PhpTemplateViewPlugin\TemplateArgument\Argument;
+
 class Template extends AbstractViewPart
 {
 
     /**
      * @param string $package
      * @param string $name
-     * @param array $variables
+     * @param Argument[] $arguments
      */
-	public function __construct(string $package, string $name, array $variables = []){
+	public function __construct(string $package, string $name, array $arguments = []){
 		$this->type = 'template';
-		parent::__construct($package, $name, $variables);
+		parent::__construct($package, $name, $arguments);
 	}
 }

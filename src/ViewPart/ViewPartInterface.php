@@ -34,12 +34,12 @@ interface ViewPartInterface
     /**
      * @return array
      */
-    public function getLocalVariables(): array;
+    public function getArguments(): array;
 
     /**
-     * @param $variables
+     * @param $arguments
      */
-    public function setLocalVariables($variables);
+    public function setArguments(array $arguments);
 
     /**
      * @return string

@@ -23,6 +23,8 @@ use Merophp\ViewEngine\ViewEngine;
 use Merophp\ViewEngine\ViewPlugin\Collection\ViewPluginCollection;
 use Merophp\ViewEngine\ViewPlugin\Provider\ViewPluginProvider;
 use Merophp\ViewEngine\ViewPlugin\ViewPlugin;
+use Merophp\ViewEngine\TemplateArgument\Argument;
+use Merophp\ViewEngine\TemplateArgument\SharedArgument;
 
 $collection = new ViewPluginCollection();
 $collection->add(
@@ -34,7 +36,10 @@ $provider = new ViewPluginProvider($collection);
 $viewEngine = new ViewEngine($provider);
 
 $view = $viewEngine->initializeView();
-$view->assign('name', 'Tom');
+$view->assignTemplateArguments(
+    new Argument('name', 'Tom'),
+    new SharedArgument('name', 'Tom') //This argument is available in the template and all of its partials
+);
 $view->template('viewPackage.hello');
 echo $viewEngine->renderView($view);
 </code></pre>

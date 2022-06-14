@@ -5,6 +5,9 @@ namespace Merophp\PhpTemplateViewPlugin\ViewPart\Renderer;
 
 use Exception;
 use Merophp\PhpTemplateViewPlugin\PhpTemplateViewConfiguration;
+use Merophp\PhpTemplateViewPlugin\TemplateArgument\{
+    Argument, GlobalArgument, SharedArgument
+};
 use Merophp\PhpTemplateViewPlugin\TemplateService;
 use Merophp\PhpTemplateViewPlugin\ViewPart\ViewPartInterface;
 
@@ -27,7 +30,7 @@ class ViewPartRenderer
     /**
      * @param ViewPartInterface $viewPart
      * @param TemplateService $templateService
-     * @param array $assignedArguments
+     * @param Argument[] $assignedArguments
      * @param array $marker
      * @return false|string
      * @throws Exception
@@ -44,13 +47,10 @@ class ViewPartRenderer
                 $file
             ));
 
-        $allArguments = array_merge(
-            $assignedArguments,
-            $viewPart->getLocalVariables()
-        );
+        $argumentsAsMap = $this->convertArgumentsToMap(array_merge($viewPart->getArguments(), $assignedArguments));
 
-        $renderFuntion = function(string $file, array $arguments, TemplateService $templateService, array $marker=[]){
-            extract($arguments);
+        $renderFuntion = function(string $file, array $argumentsAsMap, TemplateService $templateService, array $marker=[]){
+            extract($argumentsAsMap);
             ob_start();
             require($file);
             $result=ob_get_contents();
@@ -58,6 +58,37 @@ class ViewPartRenderer
             return $result;
         };
 
-        return $renderFuntion($file, $allArguments, $templateService, $marker);
+        return $renderFuntion($file, $argumentsAsMap, $templateService, $marker);
+    }
+
+    /**
+     * @param Argument[] $arguments
+     * @return array
+     */
+    private function convertArgumentsToMap(array $arguments): array
+    {
+        $argsAsMap = [];
+
+        $globalArguments = array_filter($arguments, function($arg){
+            return get_class($arg) === GlobalArgument::class;
+        });
+        foreach($globalArguments as $arg){
+            $argsAsMap[$arg->getName()] = $arg->getValue();
+        }
+
+        $sharedArguments = array_filter($arguments, function($arg){
+            return get_class($arg) === SharedArgument::class;
+        });
+        foreach($sharedArguments as $arg){
+            $argsAsMap[$arg->getName()] = $arg->getValue();
+        }
+
+        $localArguments = array_filter($arguments, function($arg){
+            return get_class($arg) === Argument::class;
+        });
+        foreach($localArguments as $arg){
+            $argsAsMap[$arg->getName()] = $arg->getValue();
+        }
+        return $argsAsMap;
     }
 }

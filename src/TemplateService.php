@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Merophp\PhpTemplateViewPlugin;
 
 use Exception;
+use Merophp\PhpTemplateViewPlugin\TemplateArgument\Argument;
 
 /**
  * Proxy class for PhpTemplateView to pass down for templates, layouts and partials
@@ -27,15 +28,17 @@ class TemplateService
 
     /**
      * @param string $identifier
-     * @param array $arguments
+     * @param array $argumentsAsMap
      * @return string
      */
-	public function partial(string $identifier, array $arguments = [])
+	public function partial(string $identifier, array $argumentsAsMap = [])
     {
         return $this->view->renderPartial(
             $identifier,
             $this,
-            $arguments
+            array_map(function($key, $value){
+                return new Argument($key, $value);
+            }, array_keys($argumentsAsMap), array_values($argumentsAsMap))
         );
 	}
 
@@ -58,10 +61,10 @@ class TemplateService
 
     /**
      * @param string $methodName
-     * @param array $arguments
+     * @param array $methodArguments
      * @return false|mixed|void
      */
-    public function __call(string $methodName, array $arguments = [])
+    public function __call(string $methodName, array $methodArguments = [])
     {
         if(!in_array($methodName, [
             'includeJsFile',
@@ -70,6 +73,6 @@ class TemplateService
             'renderIncludedCssFiles'
         ])) return;
 
-        return call_user_func_array([$this->view, $methodName], $arguments);
+        return call_user_func_array([$this->view, $methodName], $methodArguments);
     }
 }

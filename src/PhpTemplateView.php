@@ -4,6 +4,9 @@ declare(strict_types=1);
 namespace Merophp\PhpTemplateViewPlugin;
 
 use Exception;
+use Merophp\PhpTemplateViewPlugin\TemplateArgument\Argument;
+use Merophp\PhpTemplateViewPlugin\TemplateArgument\GlobalArgument;
+use Merophp\PhpTemplateViewPlugin\TemplateArgument\SharedArgument;
 use Throwable;
 
 use Merophp\ViewEngine\ViewInterface;
@@ -35,17 +38,12 @@ class PhpTemplateView implements ViewInterface
 	private ?Layout $layout = null;
 
 	/**
-	 * @var array
+	 * @var Argument[]
 	 */
 	private array $arguments = [];
 
-    /**
-     * @var array
-     */
-    private array $sharedArguments = [];
-
 	/**
-	 * @var array
+	 * @var GlobalArgument[]
 	 */
 	private static array $defaultArguments = [];
 
@@ -100,12 +98,12 @@ class PhpTemplateView implements ViewInterface
      *
      * @api
      * @param string $ident
-     * @param array $variables
+     * @param Argument[] $arguments
      * @throws Exception
      */
-    public function template(string $ident, array $variables = [])
+    public function template(string $ident, array $arguments = [])
     {
-        $this->createTemplate($ident, $variables);
+        $this->createTemplate($ident, $arguments);
     }
 
     /**
@@ -113,12 +111,25 @@ class PhpTemplateView implements ViewInterface
      *
      * @api
      * @param string $ident
-     * @param array $variables
+     * @param Argument[] $arguments
      * @throws Exception
      */
-    public function layout(string $ident, array $variables = [])
+    public function layout(string $ident, array $arguments = [])
     {
-        $this->createLayout($ident, $variables);
+        $this->createLayout($ident, $arguments);
+    }
+
+    /**
+     * Assign global arguments
+     *
+     * @param GlobalArgument ...$args
+     * @api
+     */
+    public static function assignGlobalTemplateArguments(GlobalArgument ...$args)
+    {
+        foreach($args as $arg){
+            self::$defaultArguments[$arg->getName()] = $arg->getValue();
+        }
     }
 
     /**
@@ -128,11 +139,38 @@ class PhpTemplateView implements ViewInterface
      * @param $value
      * @throws Exception
      * @api
+     * @deprecated
      */
-	public static function assignDefaultArgument(string $key, $value)
+    public static function assignDefaultArgument(string $key, $value)
     {
-		self::$defaultArguments[$key] = $value;
-	}
+        self::$defaultArguments[] = new GlobalArgument($key, $value);
+    }
+
+    /**
+     * @api
+     * @param string $key
+     * @param $value
+     */
+    public function assign(string $key, $value)
+    {
+        $this->arguments[] = new Argument($key, $value);
+    }
+
+    /**
+     * Assign arguments with different types (normal, shared, global)
+     *
+     * @param Argument ...$args
+     * @api
+     */
+    public function assignTemplateArguments(Argument ...$args)
+    {
+        foreach($args as $arg){
+            if($arg instanceof GlobalArgument)
+                self::$defaultArguments[] = $arg;
+            else
+                $this->arguments[] = $arg;
+        }
+    }
 
     /**
      * Assign shared arguments for template and related partials
@@ -141,11 +179,12 @@ class PhpTemplateView implements ViewInterface
      * @param $value
      * @throws Exception
      * @api
+     * @deprecated
      */
-	public function assignSharedArgument(string $key, $value)
+    public function assignSharedArgument(string $key, $value)
     {
-		$this->sharedArguments[$key] = $value;
-	}
+        $this->arguments[] = new SharedArgument($key, $value);
+    }
 
     /**
      * @return string
@@ -159,7 +198,7 @@ class PhpTemplateView implements ViewInterface
     /**
      * @param string $identifier
      * @param TemplateService $templateService
-     * @param array $arguments
+     * @param Argument[] $arguments
      * @return string
      */
     public function renderPartial(string $identifier, TemplateService $templateService, array $arguments = []): string
@@ -172,7 +211,7 @@ class PhpTemplateView implements ViewInterface
                 $templateService,
                 array_merge(
                     static::getDefaultArguments(),
-                    $this->getSharedArguments()
+                    $this->getArguments()
                 )
             );
         }
@@ -199,16 +238,6 @@ class PhpTemplateView implements ViewInterface
      */
 	public function setLayout(Layout $layout){
 		$this->layout = $layout;
-	}
-
-    /**
-     * @api
-     * @param string $key
-     * @param $value
-     */
-	public function assign(string $key, $value)
-    {
-		$this->arguments[$key] = $value;
 	}
 
     /**
@@ -317,11 +346,11 @@ class PhpTemplateView implements ViewInterface
     }
 
     /**
-     * @return array
+     * @return Argument[]
      */
-    public function getSharedArguments(): array
+    public function getArguments(): array
     {
-        return $this->sharedArguments;
+        return $this->arguments;
     }
 
     /**
@@ -338,13 +367,5 @@ class PhpTemplateView implements ViewInterface
     public function getTemplate(): ?Template
     {
         return $this->template;
-    }
-
-    /**
-     * @return array
-     */
-    public function getArguments(): array
-    {
-        return $this->arguments;
     }
 }

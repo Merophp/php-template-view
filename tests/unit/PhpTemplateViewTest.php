@@ -2,6 +2,9 @@
 
 use Merophp\PhpTemplateViewPlugin\PhpTemplateView;
 use Merophp\PhpTemplateViewPlugin\PhpTemplateViewConfiguration;
+use Merophp\PhpTemplateViewPlugin\TemplateArgument\Argument;
+use Merophp\PhpTemplateViewPlugin\TemplateArgument\GlobalArgument;
+use Merophp\PhpTemplateViewPlugin\TemplateArgument\SharedArgument;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -33,14 +36,28 @@ class PhpTemplateViewTest extends TestCase
 
     public function testAssign()
     {
-        self::$instance->assign('testVar', 'Foo');
-        $this->assertEquals(['testVar' => 'Foo'], self::$instance->getArguments());
+        $clonedInstance = clone self::$instance;
+        $clonedInstance->assign('testVar', 'Foo');
+        $this->assertEquals(1, count($clonedInstance->getArguments()));
     }
 
     public function testAssignGlobalArgument()
     {
-        self::$instance->assignGlobalArgument('testVar', 'Foo2');
-        $this->assertEquals(['testVar' => 'Foo2'], self::$instance->getGlobalArguments());
+        $clonedInstance = clone self::$instance;
+        $clonedInstance->assignDefaultArgument('testVar', 'Foo2');
+        $this->assertEquals(1, count($clonedInstance->getDefaultArguments()));
+    }
+
+    public function testAssignTemplateArguments()
+    {
+        $clonedInstance = clone self::$instance;
+        $clonedInstance->assignTemplateArguments(
+            new Argument('test1','Bar1'),
+            new SharedArgument('test2','Bar2'),
+            new GlobalArgument('test3','Bar3')
+        );
+        $this->assertEquals(2, count($clonedInstance->getArguments()));
+        $this->assertEquals(2, count($clonedInstance::getDefaultArguments()));
     }
 
     public function testIncludeJsFile()

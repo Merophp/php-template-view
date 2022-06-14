@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Merophp\PhpTemplateViewPlugin;
 
 use Exception;
+use Merophp\PhpTemplateViewPlugin\TemplateArgument\Argument;
 use Merophp\PhpTemplateViewPlugin\ViewPart\Renderer\ViewPartRenderer;
 
 /**
@@ -37,7 +38,6 @@ class TemplateViewRenderer
             $templateService,
             array_merge(
                 $phpTemplateView::getDefaultArguments(),
-                $phpTemplateView->getSharedArguments(),
                 $phpTemplateView->getArguments()
             ),
         );
@@ -50,15 +50,13 @@ class TemplateViewRenderer
                 $templateService,
                 array_merge(
                     $phpTemplateView::getDefaultArguments(),
-                    $phpTemplateView->getSharedArguments(),
-                    [
-                        'view' => [
-                            'template' => [
-                                'name' => $phpTemplateView->getTemplate()->getName(),
-                                'package' => $phpTemplateView->getTemplate()->getPackage()
-                            ]
+                    $phpTemplateView->getArguments(),
+                    [new Argument('view', [
+                        'template' => [
+                            'name' => $phpTemplateView->getTemplate()->getName(),
+                            'package' => $phpTemplateView->getTemplate()->getPackage()
                         ]
-                    ]
+                    ])]
                 ),
                 $MARKER
             );

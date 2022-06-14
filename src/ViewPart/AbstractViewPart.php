@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace Merophp\PhpTemplateViewPlugin\ViewPart;
 
+use Merophp\PhpTemplateViewPlugin\TemplateArgument\Argument;
+
 abstract class AbstractViewPart implements ViewPartInterface
 {
 
@@ -24,18 +26,18 @@ abstract class AbstractViewPart implements ViewPartInterface
 	/**
 	 * @var array
 	 */
-	private array $localVariables = [];
+	private array $arguments = [];
 
     /**
      * @param string $package
      * @param string $name
-     * @param array $variables
+     * @param Argument[] $arguments
      */
-	public function __construct(string $package, string $name, array $variables = [])
+	public function __construct(string $package, string $name, array $arguments = [])
     {
         $this->package = $package;
         $this->name = $name;
-        $this->localVariables = $variables;
+        $this->arguments = $arguments;
     }
 
     /**
@@ -79,16 +81,16 @@ abstract class AbstractViewPart implements ViewPartInterface
     /**
      * @return array
      */
-	public function getLocalVariables(): array
+	public function getArguments(): array
     {
-		return $this->localVariables;
+		return $this->arguments;
 	}
 
     /**
-     * @param $variables
+     * @param Argument[] $arguments
      */
-	public function setLocalVariables($variables){
-		$this->localVariables = $variables;
+	public function setArguments(array $arguments){
+		$this->arguments = $arguments;
 	}
 
     /**
